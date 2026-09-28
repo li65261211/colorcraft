@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ColorCraft — Free Color Palette Generator</title>
+<meta name="description" content="Generate harmonious color palettes online, free. Random palettes, HSL harmonies, extract colors from any image. Copy hex, RGB or CSS variables instantly.">
+<link rel="canonical" href="https://color.crafthub.ccwu.cc/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ColorCraft — Free Color Palette Generator">
+<meta property="og:description" content="Generate harmonious color palettes online, free. Random palettes, HSL harmonies, extract colors from any image. Copy hex, RGB or CSS variables instantly.">
+<meta property="og:url" content="https://color.crafthub.ccwu.cc/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ColorCraft — Free Color Palette Generator">
+<meta name="twitter:description" content="Generate harmonious color palettes online, free. Random palettes, HSL harmonies, extract colors from any image. Copy hex, RGB or CSS variables instantly.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "ColorCraft",
+  "url": "https://color.crafthub.ccwu.cc/",
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is ColorCraft free?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. ColorCraft is completely free to use, with no account, no signup and no limits on how many palettes you generate." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use generated palettes commercially?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Colors themselves cannot be copyrighted, so any palette you generate with ColorCraft can be used freely in commercial projects, client work, websites and apps." }
+    },
+    {
+      "@type": "Question",
+      "name": "How are harmonies computed?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Harmonies are computed with HSL color-wheel math: complementary shifts the hue by 180 degrees, analogous uses hues 30 degrees apart, triadic spaces three hues 120 degrees apart, and monochromatic varies lightness while keeping hue and saturation fixed." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does my uploaded image leave my browser?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. Your image is drawn to a small canvas and analyzed locally in your browser with k-means clustering. Nothing is uploaded to any server." }
+    },
+    {
+      "@type": "Question",
+      "name": "What's the difference from a contrast checker?",
+      "acceptedAnswer": { "@type": "Answer", "text": "ColorCraft generates color palettes for design inspiration. If you need to verify that text is readable on a background, use ContrastCraft, which checks WCAG contrast ratios: https://contrast.crafthub.ccwu.cc/" }
+    }
+  ]
+}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--rose:#ec4899;--rose-dark:#db2777;--ink:#1f2937;--muted:#6b7280;--bg:#fdf2f8;--card:#fff;--border:#f9d3e6}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.6}
+header.site{display:flex;justify-content:space-between;align-items:center;max-width:1000px;margin:0 auto;padding:1rem 1.25rem}
+.brand{font-weight:800;font-size:1.3rem;color:var(--rose);text-decoration:none}
+nav.mainnav a{color:var(--muted);text-decoration:none;font-size:.92rem}
+nav.mainnav a:hover{color:var(--rose)}
+main{max-width:1000px;margin:0 auto;padding:0 1.25rem 3rem}
+.hero{text-align:center;padding:1.5rem 0 1.25rem}
+.hero h1{font-size:2rem;margin-bottom:.4rem;letter-spacing:-.01em}
+.hero p{color:var(--muted);max-width:640px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;box-shadow:0 2px 14px rgba(236,72,153,.07);margin-bottom:1.5rem}
+.tabs{display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap}
+.tab{border:1px solid var(--border);background:#fff;padding:.55rem 1.15rem;border-radius:999px;cursor:pointer;font-size:.9rem;color:var(--muted);font-family:inherit}
+.tab.active{background:var(--rose);border-color:var(--rose);color:#fff;font-weight:600}
+.tabpanel{display:none}
+.tabpanel.active{display:block}
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.1rem}
+@media(max-width:680px){.swatches{grid-template-columns:repeat(2,1fr)}}
+.swatch{border-radius:12px;overflow:hidden;border:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;background:#fff}
+.swatch .chip{height:110px;position:relative}
+.lock{position:absolute;top:.4rem;right:.4rem;background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.1);border-radius:8px;padding:.2rem .45rem;cursor:pointer;font-size:.85rem;line-height:1}
+.lock.locked{background:var(--rose);color:#fff;border-color:var(--rose)}
+.swatch .info{padding:.55rem .6rem}
+.hexbtn{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;cursor:pointer;border:none;background:none;font-size:.92rem;padding:0;color:var(--ink)}
+.hexbtn:hover{color:var(--rose)}
+.swatch .rgb{font-size:.7rem;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.badges{display:flex;gap:.3rem;margin-top:.4rem;flex-wrap:wrap}
+.badge{font-size:.66rem;background:#f3f4f6;border-radius:6px;padding:.12rem .4rem;color:#374151;white-space:nowrap}
+.actions{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin-top:.4rem}
+.btn{background:var(--rose);color:#fff;border:none;border-radius:10px;padding:.65rem 1.35rem;font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--rose-dark)}
+.btn.ghost{background:#fff;color:var(--rose);border:1px solid var(--rose)}
+.hint{font-size:.8rem;color:var(--muted)}
+.contrast-link{margin-top:.9rem;font-size:.85rem}
+.contrast-link a{color:var(--rose);text-decoration:none;font-weight:600}
+.contrast-link a:hover{text-decoration:underline}
+.hcontrols{display:flex;gap:.8rem;align-items:center;margin-bottom:1.2rem;flex-wrap:wrap}
+.hcontrols input[type=color]{width:52px;height:40px;border:1px solid var(--border);border-radius:8px;padding:2px;background:#fff;cursor:pointer}
+.hcontrols input[type=text]{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1rem;padding:.45rem .7rem;border:1px solid var(--border);border-radius:8px;width:130px;text-transform:uppercase}
+.hrow{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap}
+.hlabel{width:150px;font-weight:600;font-size:.88rem;padding-top:.5rem;flex-shrink:0}
+.hchips{display:flex;gap:.6rem;flex-wrap:wrap}
+.hchip{display:flex;flex-direction:column;align-items:center;gap:.25rem}
+.hchip .c{width:64px;height:46px;border-radius:9px;cursor:pointer;border:1px solid rgba(0,0,0,.12)}
+.hchip .c:hover{transform:scale(1.06)}
+.hchip span{font-size:.68rem;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--muted)}
+.drop{border:2px dashed var(--border);border-radius:12px;padding:1.6rem;text-align:center;margin-bottom:1.2rem;background:#fff}
+.drop input[type=file]{margin-top:.6rem}
+.imgrow{display:flex;gap:1.2rem;align-items:flex-start;flex-wrap:wrap}
+#imgPreview{max-width:220px;max-height:160px;border-radius:10px;border:1px solid var(--border);display:none}
+#imgCanvas{display:none}
+.imgpal{display:flex;gap:.6rem;flex-wrap:wrap}
+.features ul{list-style:none;display:grid;gap:.6rem}
+.features li{padding-left:1.6rem;position:relative;font-size:.95rem}
+.features li::before{content:"✓";position:absolute;left:0;color:var(--rose);font-weight:700}
+.faq details{background:#fff;border:1px solid var(--border);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:.7rem}
+.faq summary{font-weight:600;cursor:pointer;font-size:.95rem}
+.faq summary:hover{color:var(--rose)}
+.faq p{margin-top:.5rem;color:var(--muted);font-size:.92rem}
+.faq a{color:var(--rose)}
+h2.section{font-size:1.25rem;margin-bottom:.9rem}
+footer.site{border-top:1px solid var(--border);margin-top:1rem;padding:2rem 1.25rem 2.5rem;background:#fff}
+.foot-inner{max-width:1000px;margin:0 auto}
+.foot-inner h2{font-size:1.05rem;margin-bottom:1rem}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.8rem;margin-bottom:1.6rem}
+.tool-card{border:1px solid var(--border);border-radius:12px;padding:.8rem .95rem;text-decoration:none;color:var(--ink);display:block;background:var(--bg)}
+.tool-card:hover{border-color:var(--rose)}
+.tool-card strong{display:block;font-size:.92rem;color:var(--rose)}
+.tool-card span{font-size:.8rem;color:var(--muted)}
+.copy{font-size:.82rem;color:var(--muted);text-align:center}
+#toast{position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:.6rem 1.2rem;border-radius:999px;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header class="site">
+  <a class="brand" href="/">ColorCraft</a>
+  <nav class="mainnav"><a href="https://crafthub.ccwu.cc/">All Tools</a></nav>
+</header>
+<main>
+  <section class="hero">
+    <h1>Free Color Palette Generator</h1>
+    <p>Create harmonious color palettes in one click — or explore HSL harmonies and extract colors from any image. Everything runs in your browser.</p>
+  </section>
+
+  <section class="card">
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="generate" role="tab">Generate</button>
+      <button class="tab" data-tab="harmonies" role="tab">Harmonies</button>
+      <button class="tab" data-tab="image" role="tab">From image</button>
+    </div>
+
+    <div class="tabpanel active" id="panel-generate" role="tabpanel">
+      <div class="swatches" id="swatches"></div>
+      <div class="actions">
+        <button class="btn" id="genBtn">Generate</button>
+        <button class="btn ghost" id="copyCssBtn">Copy CSS variables</button>
+        <button class="btn ghost" id="copyJsonBtn">Copy JSON</button>
+        <span class="hint">Tip: press <strong>Space</strong> to generate · lock colors you like · click any hex to copy</span>
+      </div>
+      <p class="contrast-link">Need a full accessibility check? <a href="https://contrast.crafthub.ccwu.cc/">Full check on ContrastCraft →</a></p>
+    </div>
+
+    <div class="tabpanel" id="panel-harmonies" role="tabpanel">
+      <div class="hcontrols">
+        <input type="color" id="basePicker" value="#ec4899" aria-label="Base color">
+        <input type="text" id="baseHex" value="#EC4899" maxlength="7" spellcheck="false" aria-label="Base color hex">
+      </div>
+      <div id="harmonyRows"></div>
+      <p class="hint">Click any color to copy its hex value.</p>
+    </div>
+
+    <div class="tabpanel" id="panel-image" role="tabpanel">
+      <div class="drop">
+        <p><strong>Upload an image</strong> to extract its dominant colors.</p>
+        <input type="file" id="imgInput" accept="image/*">
+        <canvas id="imgCanvas"></canvas>
+      </div>
+      <div class="imgrow">
+        <img id="imgPreview" alt="Uploaded image preview">
+        <div class="imgpal" id="imgPalette"></div>
+      </div>
+      <p class="hint" style="margin-top:.8rem">Processed locally with k-means clustering (k=5) — your image never leaves your browser.</p>
+    </div>
+  </section>
+
+  <section class="card features">
+    <h2 class="section">Why ColorCraft</h2>
+    <ul>
+      <li><strong>One-click palettes</strong> — generate harmonious 5-color palettes instantly, lock the colors you love and re-roll the rest.</li>
+      <li><strong>Real color theory</strong> — complementary, analogous, triadic and monochromatic harmonies computed with HSL color-wheel math.</li>
+      <li><strong>Extract from images</strong> — upload any photo and pull its dominant colors with client-side k-means clustering.</li>
+      <li><strong>Copy anywhere</strong> — click any swatch to copy hex, or export the whole palette as CSS variables or JSON.</li>
+    </ul>
+  </section>
+
+  <section class="card faq">
+    <h2 class="section">FAQ</h2>
+    <details>
+      <summary>Is ColorCraft free?</summary>
+      <p>Yes. ColorCraft is completely free to use, with no account, no signup and no limits on how many palettes you generate.</p>
+    </details>
+    <details>
+      <summary>Can I use generated palettes commercially?</summary>
+      <p>Yes — colors themselves can't be copyrighted, so any palette you generate here is free to use in commercial projects, client work, websites and apps.</p>
+    </details>
+    <details>
+      <summary>How are harmonies computed?</summary>
+      <p>With HSL color-wheel math: complementary shifts the hue by 180°, analogous uses hues 30° apart, triadic spaces three hues 120° apart, and monochromatic varies lightness while keeping hue and saturation fixed.</p>
+    </details>
+    <details>
+      <summary>Does my uploaded image leave my browser?</summary>
+      <p>No. Your image is drawn to a small canvas and analyzed locally with k-means clustering. Nothing is uploaded to any server.</p>
+    </details>
+    <details>
+      <summary>What's the difference from a contrast checker?</summary>
+      <p>ColorCraft generates palettes for design inspiration. To verify that text is readable on a background, use <a href="https://contrast.crafthub.ccwu.cc/">ContrastCraft</a>, which checks WCAG contrast ratios.</p>
+    </details>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="foot-inner">
+    <h2>More free tools</h2>
+    <div class="tools-grid">
+      <a class="tool-card" href="https://cron.crafthub.ccwu.cc/"><strong>CronCraft</strong><span>Free cron expression generator &amp; builder</span></a>
+      <a class="tool-card" href="https://contrast.crafthub.ccwu.cc/"><strong>ContrastCraft</strong><span>Free WCAG color contrast checker</span></a>
+      <a class="tool-card" href="https://compress.crafthub.ccwu.cc/"><strong>CompressCraft</strong><span>Free online image compressor</span></a>
+      <a class="tool-card" href="https://regex.crafthub.ccwu.cc/"><strong>RegexCraft</strong><span>Free online regex tester</span></a>
+      <a class="tool-card" href="https://base64.crafthub.ccwu.cc/"><strong>Base64Craft</strong><span>Free Base64 encoder &amp; decoder</span></a>
+      <a class="tool-card" href="https://color.crafthub.ccwu.cc/"><strong>ColorCraft</strong><span>Free color palette generator</span></a>
+      <a class="tool-card" href="https://url.crafthub.ccwu.cc/"><strong>URLCraft</strong><span>Free QR code generator</span></a>
+    </div>
+    <p class="copy">© 2026 ColorCraft · Part of CraftHub — free online tools. All processing happens in your browser; nothing is uploaded.</p>
+  </div>
+</footer>
+<div id="toast" role="status"></div>
+<script>
+'use strict';
+/* ---------- color math ---------- */
+function normalizeHex(hex){
+  if(!hex) return null;
+  hex = hex.trim().replace(/^#/, '');
+  if(/^[0-9a-fA-F]{3}$/.test(hex)) hex = hex.split('').map(function(c){return c+c;}).join('');
+  if(!/^[0-9a-fA-F]{6}$/.test(hex)) return null;
+  return '#' + hex.toUpperCase();
+}
+function hexToRgb(hex){
+  var n = parseInt(hex.slice(1), 16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbToHex(r,g,b){
+  function p(v){ return Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0'); }
+  return ('#'+p(r)+p(g)+p(b)).toUpperCase();
+}
+function rgbToHsl(r,g,b){
+  r/=255; g/=255; b/=255;
+  var max=Math.max(r,g,b), min=Math.min(r,g,b), h=0, s=0, l=(max+min)/2;
+  if(max!==min){
+    var d=max-min;
+    s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    if(max===r) h=(g-b)/d+(g<b?6:0);
+    else if(max===g) h=(b-r)/d+2;
+    else h=(r-g)/d+4;
+    h*=60;
+  }
+  return { h:h, s:s*100, l:l*100 };
+}
+function hslToRgb(h,s,l){
+  h=((h%360)+360)%360; s/=100; l/=100;
+  var c=(1-Math.abs(2*l-1))*s;
+  var x=c*(1-Math.abs(((h/60)%2)-1));
+  var m=l-c/2, rp=0, gp=0, bp=0;
+  if(h<60){rp=c;gp=x;} else if(h<120){rp=x;gp=c;} else if(h<180){gp=c;bp=x;}
+  else if(h<240){gp=x;bp=c;} else if(h<300){rp=x;bp=c;} else {rp=c;bp=x;}
+  return { r:(rp+m)*255, g:(gp+m)*255, b:(bp+m)*255 };
+}
+function hslToHex(h,s,l){
+  var c=hslToRgb(h,s,l);
+  return rgbToHex(c.r,c.g,c.b);
+}
+/* WCAG 2 relative luminance + contrast ratio */
+function luminance(r,g,b){
+  function f(c){ c/=255; return c<=0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); }
+  return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b);
+}
+function contrastRatio(hex1,hex2){
+  var a=hexToRgb(hex1), b=hexToRgb(hex2);
+  var l1=luminance(a.r,a.g,a.b), l2=luminance(b.r,b.g,b.b);
+  return (Math.max(l1,l2)+0.05)/(Math.min(l1,l2)+0.05);
+}
+/* ---------- helpers ---------- */
+function copyText(t){
+  function legacy(){
+    var ta=document.createElement('textarea');
+    ta.value=t; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    var ok=false;
+    try{ ok=document.execCommand('copy'); }catch(e){}
+    ta.remove(); return ok;
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(t).then(function(){return true;}, legacy);
+  }
+  return Promise.resolve(legacy());
+}
+var toastTimer=null;
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ el.classList.remove('show'); },1800);
+}
+function textOn(hex){
+  return contrastRatio(hex,'#FFFFFF') >= contrastRatio(hex,'#000000') ? '#FFFFFF' : '#111111';
+}
+/* ---------- k-means (RGB) ---------- */
+function kmeans(pixels,k,iters){
+  var centers=[], used={}, attempts=0;
+  while(centers.length<k && attempts<pixels.length*2){
+    attempts++;
+    var i=Math.floor(Math.random()*pixels.length);
+    if(used[i]) continue;
+    used[i]=true;
+    centers.push([pixels[i][0],pixels[i][1],pixels[i][2]]);
+  }
+  if(!centers.length) return [];
+  var kk=centers.length; /* may be < k when the image has very few pixels */
+  for(var it=0; it<iters; it++){
+    var clusters=[], sums=[];
+    for(var c=0;c<kk;c++){ clusters.push([]); sums.push([0,0,0]); }
+    for(var p=0;p<pixels.length;p++){
+      var px=pixels[p], best=0, bd=Infinity;
+      for(var q=0;q<kk;q++){
+        var dr=px[0]-centers[q][0], dg=px[1]-centers[q][1], db=px[2]-centers[q][2];
+        var d=dr*dr+dg*dg+db*db;
+        if(d<bd){ bd=d; best=q; }
+      }
+      clusters[best].push(px);
+    }
+    for(var r=0;r<kk;r++){
+      if(!clusters[r].length) continue; /* keep old center if cluster empty */
+      var n=clusters[r].length, sr=0, sg=0, sb=0;
+      for(var s=0;s<n;s++){ sr+=clusters[r][s][0]; sg+=clusters[r][s][1]; sb+=clusters[r][s][2]; }
+      centers[r]=[sr/n, sg/n, sb/n];
+    }
+  }
+  var out=centers.map(function(c){ return rgbToHex(c[0],c[1],c[2]); });
+  /* sort by hue for a nicer presentation */
+  function hueOf(hex){ var v=hexToRgb(hex); return rgbToHsl(v.r,v.g,v.b).h; }
+  out.sort(function(a,b){ return hueOf(a)-hueOf(b); });
+  return out;
+}
+/* ---------- Generate tab ---------- */
+var state={ colors:[], locked:[false,false,false,false,false] };
+function randomPalette(){
+  var h=Math.random()*360;
+  var schemes=['analogous','complementary','triadic','mono','split'];
+  var scheme=schemes[Math.floor(Math.random()*schemes.length)];
+  var hues;
+  if(scheme==='analogous') hues=[h-40,h-20,h,h+20,h+40];
+  else if(scheme==='complementary') hues=[h,h+30,h+180,h+180,h+210];
+  else if(scheme==='triadic') hues=[h,h+120,h+240,h+60,h+180];
+  else if(scheme==='split') hues=[h,h+150,h+210,h+30,h-30];
+  else hues=[h,h,h,h,h]; /* mono */
+  var Ls = scheme==='mono'
+    ? [24,36,50,63,76].map(function(v){ return v+(Math.random()*8-4); })
+    : null;
+  return hues.map(function(hh,i){
+    var s=48+Math.random()*42; /* 48-90: vivid but not neon */
+    var l= Ls ? Math.max(10,Math.min(90,Ls[i])) : 32+Math.random()*42;
+    return hslToHex(hh,s,l);
+  });
+}
+function generate(){
+  var fresh=randomPalette();
+  for(var i=0;i<5;i++){
+    if(!state.locked[i]) state.colors[i]=fresh[i];
+  }
+  renderSwatches();
+}
+function renderSwatches(){
+  var wrap=document.getElementById('swatches');
+  wrap.innerHTML='';
+  state.colors.forEach(function(hex,i){
+    var rgb=hexToRgb(hex);
+    var onW=contrastRatio(hex,'#FFFFFF'), onB=contrastRatio(hex,'#000000');
+    var card=document.createElement('div'); card.className='swatch';
+    var chip=document.createElement('div'); chip.className='chip'; chip.style.background=hex;
+    var lock=document.createElement('button');
+    lock.className='lock'+(state.locked[i]?' locked':'');
+    lock.textContent=state.locked[i]?'\uD83D\uDD12':'\uD83D\uDD13';
+    lock.title=state.locked[i]?'Unlock':'Lock';
+    lock.setAttribute('aria-label',(state.locked[i]?'Unlock ':'Lock ')+'color '+hex);
+    lock.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      state.locked[i]=!state.locked[i];
+      renderSwatches();
+    });
+    chip.appendChild(lock);
+    var info=document.createElement('div'); info.className='info';
+    var hb=document.createElement('button'); hb.className='hexbtn'; hb.textContent=hex;
+    hb.title='Click to copy';
+    hb.addEventListener('click',function(){
+      copyText(hex).then(function(ok){ toast(ok?hex+' copied':'Copy failed'); });
+    });
+    var rg=document.createElement('div'); rg.className='rgb';
+    rg.textContent='rgb('+rgb.r+', '+rgb.g+', '+rgb.b+')';
+    var badges=document.createElement('div'); badges.className='badges';
+    var b1=document.createElement('span'); b1.className='badge';
+    b1.textContent=onW.toFixed(1)+':1 on white';
+    var b2=document.createElement('span'); b2.className='badge';
+    b2.textContent=onB.toFixed(1)+':1 on black';
+    badges.appendChild(b1); badges.appendChild(b2);
+    info.appendChild(hb); info.appendChild(rg); info.appendChild(badges);
+    card.appendChild(chip); card.appendChild(info);
+    wrap.appendChild(card);
+  });
+}
+document.getElementById('genBtn').addEventListener('click',generate);
+document.getElementById('copyCssBtn').addEventListener('click',function(){
+  var css=':root {\n'+state.colors.map(function(c,i){return '  --color-'+(i+1)+': '+c+';';}).join('\n')+'\n}';
+  copyText(css).then(function(ok){ toast(ok?'CSS variables copied':'Copy failed'); });
+});
+document.getElementById('copyJsonBtn').addEventListener('click',function(){
+  copyText(JSON.stringify(state.colors)).then(function(ok){ toast(ok?'JSON copied':'Copy failed'); });
+});
+document.addEventListener('keydown',function(e){
+  if(e.code!=='Space') return;
+  if(!document.getElementById('panel-generate').classList.contains('active')) return;
+  var tag=(document.activeElement&&document.activeElement.tagName)||'';
+  if(/INPUT|TEXTAREA|SELECT|BUTTON/.test(tag)) return;
+  e.preventDefault();
+  generate();
+});
+/* ---------- Harmonies tab ---------- */
+var HARMONY_DEFS=[
+  ['Complementary',[0,180]],
+  ['Analogous',[-30,0,30]],
+  ['Triadic',[0,120,240]]
+];
+function renderHarmonies(){
+  var raw=document.getElementById('baseHex').value;
+  var hex=normalizeHex(raw)||'#EC4899';
+  var v=hexToRgb(hex), hsl=rgbToHsl(v.r,v.g,v.b);
+  var wrap=document.getElementById('harmonyRows');
+  wrap.innerHTML='';
+  function row(label,colors){
+    var r=document.createElement('div'); r.className='hrow';
+    var lab=document.createElement('div'); lab.className='hlabel'; lab.textContent=label;
+    var chips=document.createElement('div'); chips.className='hchips';
+    colors.forEach(function(c){
+      var cell=document.createElement('div'); cell.className='hchip';
+      var sw=document.createElement('div'); sw.className='c'; sw.style.background=c; sw.title='Click to copy '+c;
+      sw.addEventListener('click',function(){
+        copyText(c).then(function(ok){ toast(ok?c+' copied':'Copy failed'); });
+      });
+      var cap=document.createElement('span'); cap.textContent=c;
+      cell.appendChild(sw); cell.appendChild(cap);
+      chips.appendChild(cell);
+    });
+    r.appendChild(lab); r.appendChild(chips);
+    wrap.appendChild(r);
+  }
+  HARMONY_DEFS.forEach(function(def){
+    row(def[0], def[1].map(function(off){ return hslToHex(hsl.h+off, hsl.s, hsl.l); }));
+  });
+  var mono=[-30,-15,0,15,30].map(function(off){
+    return hslToHex(hsl.h, hsl.s, Math.max(8,Math.min(92,hsl.l+off)));
+  });
+  row('Monochromatic',mono);
+}
+document.getElementById('basePicker').addEventListener('input',function(e){
+  document.getElementById('baseHex').value=e.target.value.toUpperCase();
+  renderHarmonies();
+});
+document.getElementById('baseHex').addEventListener('input',function(e){
+  var hex=normalizeHex(e.target.value);
+  if(hex){
+    document.getElementById('basePicker').value=hex;
+    renderHarmonies();
+  }
+});
+/* ---------- From image tab ---------- */
+document.getElementById('imgInput').addEventListener('change',function(e){
+  var f=e.target.files[0];
+  if(!f) return;
+  var url=URL.createObjectURL(f);
+  var prev=document.getElementById('imgPreview');
+  prev.src=url; prev.style.display='block';
+  var img=new Image();
+  img.onload=function(){
+    try{
+      var S=64, scale=Math.min(S/img.width,S/img.height);
+      var cv=document.getElementById('imgCanvas');
+      cv.width=Math.max(1,Math.round(img.width*scale));
+      cv.height=Math.max(1,Math.round(img.height*scale));
+      var ctx=cv.getContext('2d');
+      ctx.drawImage(img,0,0,cv.width,cv.height);
+      var d=ctx.getImageData(0,0,cv.width,cv.height).data;
+      var pixels=[];
+      for(var i=0;i<d.length;i+=4){
+        if(d[i+3]<128) continue;
+        pixels.push([d[i],d[i+1],d[i+2]]);
+      }
+      if(!pixels.length){ toast('Could not read image'); return; }
+      renderImagePalette(kmeans(pixels,5,8));
+    }finally{
+      URL.revokeObjectURL(url);
+    }
+  };
+  img.onerror=function(){ toast('Could not load image'); URL.revokeObjectURL(url); };
+  img.src=url;
+});
+function renderImagePalette(palette){
+  var wrap=document.getElementById('imgPalette');
+  wrap.innerHTML='';
+  palette.forEach(function(hex){
+    var cell=document.createElement('div'); cell.className='hchip';
+    var sw=document.createElement('div'); sw.className='c'; sw.style.background=hex; sw.title='Click to copy '+hex;
+    sw.addEventListener('click',function(){
+      copyText(hex).then(function(ok){ toast(ok?hex+' copied':'Copy failed'); });
+    });
+    var cap=document.createElement('span'); cap.textContent=hex;
+    cell.appendChild(sw); cell.appendChild(cap);
+    wrap.appendChild(cell);
+  });
+}
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(function(t){
+  t.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active');});
+    document.querySelectorAll('.tabpanel').forEach(function(x){x.classList.remove('active');});
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+  });
+});
+/* ---------- init ---------- */
+generate();
+renderHarmonies();
+</script>
+</body>
+</html>
